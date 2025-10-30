@@ -7,7 +7,7 @@ services:
 
   app:
     build: ./app
-    image: "docker.io/ptrusr/rofl-x402-docs:latest@sha256:8a9b4ec18a79eb20702758e46c1bfd5a70be93c88f0d77f8407b1a8571a8db87"
+    image: "docker.io/ptrusr/rofl-x402-docs:latest@sha256:503a20e60705222537f5b984cbc1b9e9a956832c9835dbb7511d3e6833d87e8b"
     platform: linux/amd64
     ports:
       - "4021:4021"

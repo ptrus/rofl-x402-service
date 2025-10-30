@@ -3,6 +3,8 @@ FastAPI server with x402 payment middleware.
 
 For a full example with more features, see:
 https://github.com/coinbase/x402/tree/main/examples/python/servers/fastapi
+
+Updated: 2025-10-30
 """
 
 import asyncio

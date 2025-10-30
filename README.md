@@ -46,11 +46,22 @@ uv run python test_client.py /path/to/your/document.txt
 **Example output:**
 
 ```
-✅ Success! Received summary:
+🔒 Testing without payment (should fail)...
+   ✅ Correctly rejected with 402 Payment Required
+
+✅ Job created (took 1.66s)
+
+🔒 Testing payment reuse (should fail)...
+   ✅ Correctly rejected payment reuse with 402
+
+⏳ Polling for result...
+   ✅ Completed after ~44s
 
 📄 Summary:
-   ZkTLS is combining two cryptographic approaches - TLS for secure HTTPS
-   communication and zk-SNARK circuit-based verification of data authenticity...
+   The document discusses the technology zkTLS that combines two cryptographic
+   approaches: TLS providing encryption and authentication for secure data
+   transmission in HTTPS while zero-knowledge proofs allow one party to prove
+   knowledge of information without revealing it...
 
 📊 Stats:
    Word count: 304
@@ -63,30 +74,41 @@ Testing with [zkTLS article](https://oasis.net/blog/zktls-blockchain-security) (
 
 **Live service running on Oasis Testnet** at **https://summary.updev.si** ([App ID: `rofl1qq6m08wlj3qawcfrd3ljyge2t0praed5ycwh7upg`](https://explorer.oasis.io/testnet/sapphire/rofl/app/rofl1qq6m08wlj3qawcfrd3ljyge2t0praed5ycwh7upg))
 
-Test the live deployment with:
+Test the live deployment:
 
 ```bash
 cd test
 echo "API_URL=https://summary.updev.si" >> .env
+
+# Test with default document
 uv run python test_client.py
+
+# Or test with this README
+uv run python test_client.py ../README.md
 ```
 
-**Example output (testnet):**
+**Example output (summarizing this README):**
 
 ```
-✅ Success! Received summary:
+✅ Job created (took 2.46s)
+
+🔒 Testing payment reuse (should fail)...
+   ✅ Correctly rejected payment reuse with 402
+
+⏳ Polling for result...
+   ✅ Completed after ~196s
 
 📄 Summary:
-   ZkTLS is combining two cryptographic approaches - TLS for secure HTTPS
-   communication and zk-SNARK circuit-based verification...
+   The document outlines a new AI microservice called ROFL that utilizes the
+   Ollama model from the Qwen2 series. This microservice is paid via x402
+   protocol payments and can be used to summarize documents inside a private
+   container using encryption. The document also mentions the ability to
+   monetize the service through x402 protocols and uses Base Sepolia as a
+   test network for testing purposes.
 
 📊 Stats:
-   Word count: 304
-   Reading time: 1 minute
-
-💳 Payment Details:
-   Transaction: 0x68ef147a3f205412b890211b855dd78c00cb9c047eb0d4924ea2a9283bea0a2f
-   Network: base-sepolia
+   Word count: 604
+   Reading time: 3 minutes
 ```
 
 To verify the app code, attestation, and TLS connection, see [rofl-registry](https://github.com/ptrus/rofl-registry).
