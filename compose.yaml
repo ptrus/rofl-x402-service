@@ -1,0 +1,25 @@
+services:
+  llm:
+    image: "docker.io/ollama/ollama"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: ["/usr/bin/bash", "-c", "/bin/ollama serve & sleep 5; ollama pull qwen2:0.5b; wait"]
+
+  app:
+    build: ./app
+    image: "docker.io/ptrusr/rofl-x402-docs:latest@sha256:8a9b4ec18a79eb20702758e46c1bfd5a70be93c88f0d77f8407b1a8571a8db87"
+    platform: linux/amd64
+    ports:
+      - "4021:4021"
+    annotations:
+      net.oasis.proxy.ports.4021.custom_domain: summary.updev.si
+    environment:
+      - ADDRESS=${ADDRESS:-0x492F9757240365621fA03fbcee80f3eA72b98d15}
+      - X402_NETWORK=${X402_NETWORK:-base-sepolia}
+      - X402_PRICE=${X402_PRICE:-$0.001}
+      - OLLAMA_HOST=http://llm:11434
+    depends_on:
+      - llm
+
+volumes:
+  ollama_data:

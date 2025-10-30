@@ -1,0 +1,13 @@
+[project]
+name = "rofl-x402-test-client"
+version = "0.1.0"
+description = "Test client for x402 document summarization service"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.28.0",
+    "cdp-sdk>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "x402>=0.2.1",
+    "eth-account>=0.13.7",
+]

@@ -1,0 +1,40 @@
+zkTLS: Building A Verifiable and Private Web
+
+Source: https://oasis.net/blog/zktls-blockchain-security
+
+What is zkTLS?
+
+Zero-Knowledge Transport Layer Security combines two cryptographic approaches. TLS provides encryption and authentication for secure data transmission in HTTPS, while zero-knowledge proofs allow one party to prove knowledge of information without revealing it. Together, they enable provable and encrypted data transmission.
+
+The Oasis Protocol is collaborating with leading zkTLS projects, including integration efforts with Reclaim Protocol and Sapphire to enhance data authenticity across their ecosystem.
+
+How It Works
+
+The process involves a TLS handshake establishing a secure session, followed by zkTLS capturing session details and processing them through a zk-SNARK circuit. This generates a proof verifying data authenticity and source while keeping sensitive details hidden. The proof can then be recorded on a blockchain for verification.
+
+Implementation Types
+
+Three primary approaches exist:
+
+- MPC-based: A network of nodes collaboratively creates a multi-party key, ensuring no single party controls the entire encryption key.
+
+- TEE-based: Trusted execution environments handle sensitive data internally, providing cryptographic guarantees about request and response integrity.
+
+- Proxy-based: HTTPS proxies forward encrypted traffic while providing attestations about data exchanges, with the browser generating zero-knowledge proofs.
+
+Why It Matters for Crypto
+
+Verifiability: Traditional TLS lacks proof of data origin or authenticity. zkTLS solves this by making data transfer verifiable while maintaining encryption.
+
+Privacy: Zero-knowledge proofs enable selective disclosure, allowing users to prove claims without exposing unnecessary personal information.
+
+Key Applications
+
+- DeFi lending platforms can verify creditworthiness without exposing account balances
+- Identity verification using secure web sources
+- Privacy-preserving oracles providing verifiable data feeds
+- Verifiable airdrops confirming off-chain eligibility
+
+Important Caveats
+
+zkTLS verifies data state and source but cannot assess truthfulness or context. It represents a partial solution to the oracle problem rather than a complete answer, requiring complementary safeguards like reputation systems and cross-checks for maximum effectiveness.

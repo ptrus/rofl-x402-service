@@ -1,0 +1,48 @@
+name: x402-doc-summary
+version: 0.1.0
+repository: https://github.com/ptrus/rofl-x402-service
+author: Peter Us <peter@u-s.si>
+description: A verifiable, private AI document summarization service that uses blockchain micropayments (x402 protocol) and runs inside a ROFL trusted execution environment on the Oasis Network.
+tee: tdx
+kind: container
+resources:
+  memory: 4096
+  cpus: 2
+  storage:
+    kind: disk-persistent
+    size: 10000
+artifacts:
+  firmware: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.6.2/ovmf.tdx.fd#db47100a7d6a0c1f6983be224137c3f8d7cb09b63bb1c7a5ee7829d8e994a42f
+  kernel: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.6.2/stage1.bin#e5d4d654ca1fa2c388bf64b23fc6e67815893fc7cb8b7cfee253d87963f54973
+  stage2: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.6.2/stage2-podman.tar.bz2#b2ea2a0ca769b6b2d64e3f0c577ee9c08f0bb81a6e33ed5b15b2a7e50ef9a09f
+  container:
+    runtime: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.8.2/rofl-containers#e9589c9cb68aee146a61ceefcce749ef5a391258dd26dc3037027733d883839f
+    compose: compose.yaml
+deployments:
+  default:
+    app_id: rofl1qq6m08wlj3qawcfrd3ljyge2t0praed5ycwh7upg
+    network: testnet
+    paratime: sapphire
+    admin: roflios_hackaton
+    oci_repository: rofl.sh/d7d55e8f-f2a2-4917-8867-42d23727d54c:1761813307
+    trust_root:
+      height: 29104063
+      hash: b19ef4ba4f2fbec5e6102f841854b5ea8fdbc4f153169a77492764c8f4b288ee
+    policy:
+      quotes:
+        pcs:
+          tcb_validity_period: 30
+          min_tcb_evaluation_data_number: 18
+          tdx: {}
+      enclaves:
+        - id: apvQqe6iIuZHtcMH2WvmHil5JvKxu6EPt3e9Ww57JM8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: tbMl6smzbonrs2cl/iAFTAzbtKg6Yo3Ht8G+pR5/pCMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+      endorsements:
+        - any: {}
+      fees: endorsing_node
+      max_expiration: 3
+    machines:
+      default:
+        provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+        offer: playground_short
+        id: 00000000000003ab

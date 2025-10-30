@@ -1,0 +1,14 @@
+[project]
+name = "rofl-x402"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "cdp>=0.0.2",
+    "fastapi>=0.120.2",
+    "x402>=0.2.1",
+    "python-dotenv>=1.0.0",
+    "uvicorn>=0.38.0",
+    "ollama>=0.4.4",
+]
