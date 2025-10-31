@@ -29,7 +29,7 @@ uv sync
 uv run python -c "from eth_account import Account; acc = Account.create(); print(f'Address: {acc.address}\nPrivate Key: {acc.key.hex()}')"
 
 # Fund the wallet with Base Sepolia ETH and USDC
-# - ETH for gas: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
+# - ETH for gas: https://www.coinbase.com/en-gb/developer-platform/products/faucet
 # - USDC: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 
 # Configure .env with your private key
