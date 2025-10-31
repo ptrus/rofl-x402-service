@@ -43,3 +43,14 @@ Set the following in `.env`:
 - `CDP_API_KEY_NAME`: Your CDP API key name
 - `CDP_API_KEY_PRIVATE_KEY`: Your CDP API private key
 - `API_URL`: The API endpoint (default: http://localhost:4021)
+
+## AI Provider Information
+
+The service supports two AI providers for document summarization:
+- **Ollama** (default) - Local inference with the Qwen2 0.5B model
+- **Gaia Nodes** - Decentralized AI inference with OpenAI compatible API
+
+The test client will display which provider is being used in the output.
+The AI provider is configured in the service, not the client.
+
+```
