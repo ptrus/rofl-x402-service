@@ -11,8 +11,10 @@ import asyncio
 import os
 import uuid
 from typing import Any, Dict, Optional
+from enum import Enum
 
 import ollama
+import openai
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from pydantic import BaseModel
@@ -27,8 +29,27 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 X402_NETWORK = os.getenv("X402_NETWORK", "base-sepolia")
 X402_PRICE = os.getenv("X402_PRICE", "$0.001")
 
+# Gaia Node configuration
+GAIA_NODE_URL = os.getenv("GAIA_NODE_URL")
+GAIA_MODEL_NAME = os.getenv("GAIA_MODEL_NAME", "Qwen3-30B-A3B-Q5_K_M")
+GAIA_API_KEY = os.getenv("GAIA_API_KEY")
+
+# AI Backend selection
+class AIProvider(str, Enum):
+    OLLAMA = "ollama"
+    GAIA = "gaia"
+
+AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama").lower()
+
 if not ADDRESS:
     raise ValueError("Missing required environment variable: ADDRESS")
+
+# Validate provider configuration
+if AI_PROVIDER == "gaia":
+    if not GAIA_NODE_URL:
+        raise ValueError("GAIA_NODE_URL is required when using Gaia provider")
+    if not GAIA_API_KEY:
+        raise ValueError("GAIA_API_KEY is required when using Gaia provider")
 
 app = FastAPI()
 
@@ -63,11 +84,12 @@ async def root() -> Dict[str, str]:
         "endpoint": "POST /summarize-doc",
         "price": X402_PRICE,
         "network": X402_NETWORK,
+        "ai_provider": AI_PROVIDER,
     }
 
 
-def process_summary(job_id: str, document: str):
-    """Background task to process document summarization"""
+def process_summary_with_ollama(job_id: str, document: str):
+    """Process document summarization using Ollama"""
     try:
         # Configure ollama client
         client = ollama.Client(host=OLLAMA_HOST)
@@ -108,10 +130,75 @@ Provide a clear and informative summary that captures the essence of the documen
         }
 
     except Exception as e:
+        import traceback
+        error_details = f"{str(e)}\n{traceback.format_exc()}"
         jobs[job_id] = {
             "status": "failed",
             "error": str(e),
+            "error_details": error_details,
         }
+
+
+def process_summary_with_gaia(job_id: str, document: str):
+    """Process document summarization using Gaia Nodes"""
+    try:
+        # Configure OpenAI client for Gaia compatibility
+        client = openai.OpenAI(
+            base_url=GAIA_NODE_URL,
+            api_key=GAIA_API_KEY,
+        )
+
+        # System prompt for document summarization
+        system_prompt = """You are an expert document summarizer. Your task is to:
+1. Read the provided document carefully
+2. Extract the main ideas and key points
+3. Create a concise, well-structured summary
+4. Identify key topics covered in the document
+
+Provide a clear and informative summary that captures the essence of the document."""
+
+        # Generate summary using Gaia
+        response = client.chat.completions.create(
+            model=GAIA_MODEL_NAME,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": f"Please summarize the following document:\n\n{document}",
+                },
+            ],
+        )
+
+        summary = response.choices[0].message.content
+
+        # Calculate basic statistics
+        word_count = len(document.split())
+        reading_time = max(1, word_count // 200)  # Assume 200 words per minute
+
+        # Update job with result
+        jobs[job_id] = {
+            "status": "completed",
+            "summary": summary,
+            "word_count": word_count,
+            "reading_time": f"{reading_time} minute{'s' if reading_time != 1 else ''}",
+        }
+
+    except Exception as e:
+        import traceback
+        error_details = f"{str(e)}\n{traceback.format_exc()}"
+        jobs[job_id] = {
+            "status": "failed",
+            "error": str(e),
+            "error_details": error_details,
+        }
+
+
+def process_summary(job_id: str, document: str):
+    """Background task to process document summarization"""
+    if AI_PROVIDER == "gaia":
+        process_summary_with_gaia(job_id, document)
+    else:
+        process_summary_with_ollama(job_id, document)
 
 
 @app.post("/summarize-doc")
@@ -143,6 +230,7 @@ async def summarize_doc(request: DocumentRequest, background_tasks: BackgroundTa
         "job_id": job_id,
         "status": "processing",
         "status_url": f"/summarize-doc/{job_id}",
+        "provider": AI_PROVIDER,
     }
 
 

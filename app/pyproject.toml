@@ -11,4 +11,5 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "uvicorn>=0.38.0",
     "ollama>=0.4.4",
+    "openai>=1.0.0",
 ]
