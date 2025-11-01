@@ -97,7 +97,7 @@ Testing with [zkTLS article](https://oasis.net/blog/zktls-blockchain-security) (
 This service supports two AI providers for document summarization:
 
 1. **Ollama** (default) - Local inference with the Qwen2 0.5B model
-2. **Gaia Nodes** - Cloud-based inference with OpenAI compatible API
+2. **Gaia Nodes** - Local inference with OpenAI compatible API (you can remove ollama container from compose.yaml if using Gaia). Learn how to launch your own gaia node docs.gaianet.ai/getting-started/quick-start.
 
 To switch between providers, set the `AI_PROVIDER` environment variable:
 
