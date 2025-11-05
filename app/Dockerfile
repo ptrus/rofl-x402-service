@@ -8,11 +8,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies
-RUN uv sync --frozen --no-dev
+# Install dependencies (with ollama group by default)
+RUN uv sync --frozen --no-dev --group ollama
 
 # Copy application code
-COPY main.py .env* ./
+COPY . .
 
 # Expose port
 EXPOSE 4021

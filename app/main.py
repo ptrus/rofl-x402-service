@@ -1,64 +1,120 @@
 """
-FastAPI server with x402 payment middleware.
-
-For a full example with more features, see:
-https://github.com/coinbase/x402/tree/main/examples/python/servers/fastapi
-
-Updated: 2025-10-30
+Oasis ROFL FastAPI server with x402 payment middleware.
 """
 
-import asyncio
 import os
+import time
 import uuid
-from typing import Any, Dict, Optional
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
-import ollama
-import openai
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from x402.fastapi.middleware import require_payment
+
+from agent import add_signing_key_to_agent, initialize_agent
+from signing import signing_service
 
 # Load environment variables
 load_dotenv()
 
 # Get configuration from environment
 ADDRESS = os.getenv("ADDRESS")
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 X402_NETWORK = os.getenv("X402_NETWORK", "base-sepolia")
 X402_PRICE = os.getenv("X402_PRICE", "$0.001")
+X402_ENDPOINT_URL = os.getenv("X402_ENDPOINT_URL", "http://localhost:4021/summarize-doc")
 
-# Gaia Node configuration
-GAIA_NODE_URL = os.getenv("GAIA_NODE_URL")
-GAIA_MODEL_NAME = os.getenv("GAIA_MODEL_NAME", "Qwen3-30B-A3B-Q5_K_M")
-GAIA_API_KEY = os.getenv("GAIA_API_KEY")
 
 # AI Backend selection
 class AIProvider(str, Enum):
     OLLAMA = "ollama"
     GAIA = "gaia"
 
+
 AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama").lower()
+
+# Conditionally import AI provider modules
+if AI_PROVIDER == "gaia":
+    try:
+        import gaia_provider as ai_provider
+    except ImportError as e:
+        raise ImportError(
+            "Gaia provider selected but openai package not installed. "
+            "Install with: uv sync --group gaia"
+        ) from e
+else:
+    try:
+        import ollama_provider as ai_provider
+    except ImportError as e:
+        raise ImportError(
+            "Ollama provider selected but ollama package not installed. "
+            "Install with: uv sync --group ollama"
+        ) from e
+
+# Agent0 SDK configuration
+AGENT0_CHAIN_ID = int(os.getenv("AGENT0_CHAIN_ID", "11155111"))
+AGENT0_RPC_URL = os.getenv("AGENT0_RPC_URL")
+AGENT0_PRIVATE_KEY = os.getenv("AGENT0_PRIVATE_KEY")
+AGENT0_IPFS_PROVIDER = os.getenv("AGENT0_IPFS_PROVIDER", "pinata")
+AGENT0_PINATA_JWT = os.getenv("AGENT0_PINATA_JWT")
+
+# Agent configuration
+AGENT_NAME = os.getenv("AGENT_NAME", "Oasis ROFL x402 Summarization Agent")
+AGENT_DESCRIPTION = os.getenv(
+    "AGENT_DESCRIPTION",
+    "Oasis ROFL x402-enabled document processing agent running in TEE. REST API for async summarization. Multi-provider AI backend (Ollama/Gaia). On-chain registered with reputation trust model.",
+)
+AGENT_IMAGE = os.getenv("AGENT_IMAGE", "https://example.com/agent-image.png")
+AGENT_WALLET_ADDRESS = os.getenv("AGENT_WALLET_ADDRESS")
 
 if not ADDRESS:
     raise ValueError("Missing required environment variable: ADDRESS")
 
-# Validate provider configuration
-if AI_PROVIDER == "gaia":
-    if not GAIA_NODE_URL:
-        raise ValueError("GAIA_NODE_URL is required when using Gaia provider")
-    if not GAIA_API_KEY:
-        raise ValueError("GAIA_API_KEY is required when using Gaia provider")
-
 app = FastAPI()
+
+# Logo path
+LOGO_PATH = Path(__file__).parent / "logo.png"
 
 # Model constraints
 MAX_DOCUMENT_LENGTH = 400000  # ~100K tokens (rough estimate: 4 chars per token)
 MIN_DOCUMENT_LENGTH = 50  # Minimum meaningful document length
 
 # In-memory job storage (in production, use Redis or similar)
-jobs: Dict[str, Dict[str, Any]] = {}
+jobs: dict[str, dict[str, Any]] = {}
+
+# Global agent instance
+agent = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize Agent0 SDK, signing service, and create agent on startup"""
+    global agent
+
+    # Initialize ROFL signing service
+    await signing_service.initialize()
+
+    # Initialize Agent0 SDK and create agent
+    _, agent = await initialize_agent(
+        agent0_chain_id=AGENT0_CHAIN_ID,
+        agent0_rpc_url=AGENT0_RPC_URL,
+        agent0_private_key=AGENT0_PRIVATE_KEY,
+        agent0_ipfs_provider=AGENT0_IPFS_PROVIDER,
+        agent0_pinata_jwt=AGENT0_PINATA_JWT,
+        agent_name=AGENT_NAME,
+        agent_description=AGENT_DESCRIPTION,
+        agent_image=AGENT_IMAGE,
+        agent_wallet_address=AGENT_WALLET_ADDRESS,
+        x402_endpoint_url=X402_ENDPOINT_URL,
+        ai_provider=AI_PROVIDER,
+    )
+
+    # Add signing public key to agent metadata if available
+    if agent and signing_service.public_key_hex:
+        await add_signing_key_to_agent(agent, signing_service.public_key_hex)
 
 
 class DocumentRequest(BaseModel):
@@ -66,6 +122,8 @@ class DocumentRequest(BaseModel):
 
 
 # Apply payment middleware to POST endpoint only (not GET status polling)
+# IMPORTANT: If using production endpoints, ensure payment settlement is completed
+# on-chain before starting the job to avoid processing unpaid requests.
 app.middleware("http")(
     require_payment(
         path="/summarize-doc",
@@ -77,9 +135,9 @@ app.middleware("http")(
 
 
 @app.get("/")
-async def root() -> Dict[str, str]:
+async def root() -> dict[str, Any]:
     """Root endpoint with service information"""
-    return {
+    response = {
         "service": "ROFL x402 Document Summarization",
         "endpoint": "POST /summarize-doc",
         "price": X402_PRICE,
@@ -87,122 +145,29 @@ async def root() -> Dict[str, str]:
         "ai_provider": AI_PROVIDER,
     }
 
-
-def process_summary_with_ollama(job_id: str, document: str):
-    """Process document summarization using Ollama"""
-    try:
-        # Configure ollama client
-        client = ollama.Client(host=OLLAMA_HOST)
-
-        # System prompt for document summarization
-        system_prompt = """You are an expert document summarizer. Your task is to:
-1. Read the provided document carefully
-2. Extract the main ideas and key points
-3. Create a concise, well-structured summary
-4. Identify key topics covered in the document
-
-Provide a clear and informative summary that captures the essence of the document."""
-
-        # Generate summary using Ollama
-        response = client.chat(
-            model="qwen2:0.5b",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": f"Please summarize the following document:\n\n{document}",
-                },
-            ],
-        )
-
-        summary = response["message"]["content"]
-
-        # Calculate basic statistics
-        word_count = len(document.split())
-        reading_time = max(1, word_count // 200)  # Assume 200 words per minute
-
-        # Update job with result
-        jobs[job_id] = {
-            "status": "completed",
-            "summary": summary,
-            "word_count": word_count,
-            "reading_time": f"{reading_time} minute{'s' if reading_time != 1 else ''}",
+    # Add agent information if available
+    if agent:
+        response["agent"] = {
+            "id": getattr(agent, "agentId", None),
+            "uri": getattr(agent, "agentURI", None),
+            "name": AGENT_NAME,
         }
 
-    except Exception as e:
-        import traceback
-        error_details = f"{str(e)}\n{traceback.format_exc()}"
-        jobs[job_id] = {
-            "status": "failed",
-            "error": str(e),
-            "error_details": error_details,
-        }
+    return response
 
 
-def process_summary_with_gaia(job_id: str, document: str):
-    """Process document summarization using Gaia Nodes"""
-    try:
-        # Configure OpenAI client for Gaia compatibility
-        client = openai.OpenAI(
-            base_url=GAIA_NODE_URL,
-            api_key=GAIA_API_KEY,
-        )
-
-        # System prompt for document summarization
-        system_prompt = """You are an expert document summarizer. Your task is to:
-1. Read the provided document carefully
-2. Extract the main ideas and key points
-3. Create a concise, well-structured summary
-4. Identify key topics covered in the document
-
-Provide a clear and informative summary that captures the essence of the document."""
-
-        # Generate summary using Gaia
-        response = client.chat.completions.create(
-            model=GAIA_MODEL_NAME,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": f"Please summarize the following document:\n\n{document}",
-                },
-            ],
-        )
-
-        summary = response.choices[0].message.content
-
-        # Calculate basic statistics
-        word_count = len(document.split())
-        reading_time = max(1, word_count // 200)  # Assume 200 words per minute
-
-        # Update job with result
-        jobs[job_id] = {
-            "status": "completed",
-            "summary": summary,
-            "word_count": word_count,
-            "reading_time": f"{reading_time} minute{'s' if reading_time != 1 else ''}",
-        }
-
-    except Exception as e:
-        import traceback
-        error_details = f"{str(e)}\n{traceback.format_exc()}"
-        jobs[job_id] = {
-            "status": "failed",
-            "error": str(e),
-            "error_details": error_details,
-        }
-
-
-def process_summary(job_id: str, document: str):
-    """Background task to process document summarization"""
-    if AI_PROVIDER == "gaia":
-        process_summary_with_gaia(job_id, document)
-    else:
-        process_summary_with_ollama(job_id, document)
+@app.get("/logo.png")
+async def get_logo():
+    """Serve the agent logo"""
+    if LOGO_PATH.exists():
+        return FileResponse(LOGO_PATH, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Logo not found")
 
 
 @app.post("/summarize-doc")
-async def summarize_doc(request: DocumentRequest, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+async def summarize_doc(
+    request: DocumentRequest, background_tasks: BackgroundTasks
+) -> dict[str, Any]:
     # Validate document length
     doc_length = len(request.document)
 
@@ -220,10 +185,10 @@ async def summarize_doc(request: DocumentRequest, background_tasks: BackgroundTa
 
     # Create job ID
     job_id = str(uuid.uuid4())
-    jobs[job_id] = {"status": "processing"}
+    jobs[job_id] = {"status": "processing", "timestamp": int(time.time())}
 
-    # Start background processing
-    background_tasks.add_task(process_summary, job_id, request.document)
+    # Start background processing using the selected AI provider
+    background_tasks.add_task(ai_provider.process_summary, job_id, request.document, jobs)
 
     # Return job ID immediately
     return {
@@ -231,16 +196,22 @@ async def summarize_doc(request: DocumentRequest, background_tasks: BackgroundTa
         "status": "processing",
         "status_url": f"/summarize-doc/{job_id}",
         "provider": AI_PROVIDER,
+        "timestamp": int(time.time()),
     }
 
 
 @app.get("/summarize-doc/{job_id}")
-async def get_summary_status(job_id: str) -> Dict[str, Any]:
+async def get_summary_status(job_id: str) -> dict[str, Any]:
     """Get the status of a summarization job"""
     if job_id not in jobs:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return jobs[job_id]
+    response = jobs[job_id]
+
+    # Sign the response if signing is enabled
+    signed_response = signing_service.sign_response(response)
+
+    return signed_response
 
 
 if __name__ == "__main__":

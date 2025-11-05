@@ -1,17 +1,21 @@
-# ROFL x402 Document Summarization Service
+# Oasis ROFL x402 Document Summarization Service
 
 A confidential AI microservice that summarizes documents inside a verifiable TEE, paid via x402 micropayments.
 
-- **🔒 Private**: Documents processed inside a confidential ROFL container using Ollama (qwen2:0.5b) or Gaia Nodes
-- **🔐 Secure**: Uses [zkTLS](https://oasis.net/blog/zktls-blockchain-security) with end-to-end TLS authentication
+- **🔒 Private**: Documents processed inside a confidential Oasis ROFL container using Ollama (qwen2:0.5b) or Gaia Nodes
+- **🔐 Secure**: Uses aTLS (Attested TLS) with end-to-end TLS authentication from the TEE
 - **✅ Verifiable**: Remote attestation proves the exact code running in the TEE
+- **🔏 Signed**: All responses cryptographically signed with TEE-generated SECP256K1 keys
 - **💰 Monetizable**: x402 micropayments - $0.001 per summary on Base Sepolia (testnet)
+- **📝 Discoverable**: Registered on-chain using [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) Agent Identity Standard
 
 **Tech Stack**
 - Python FastAPI backend
 - Ollama (Qwen2 0.5B model) or Gaia Nodes (OpenAI compatible API)
 - x402 protocol for micropayments
-- Runs in a ROFL TEE on the Oasis Network
+- ERC-8004 on-chain agent registration with [Agent0 SDK](https://github.com/agent0lab/agent0-py)
+- Oasis ROFL keymanager for TEE-based cryptographic signing
+- Runs in an Oasis ROFL TEE on the Oasis Network
 
 ## Testing Locally
 
@@ -97,13 +101,14 @@ Testing with [zkTLS article](https://oasis.net/blog/zktls-blockchain-security) (
 This service supports two AI providers for document summarization:
 
 1. **Ollama** (default) - Local inference with the Qwen2 0.5B model
-2. **Gaia Nodes** - Local inference with OpenAI compatible API (you can remove ollama container from compose.yaml if using Gaia). Learn how to launch your own gaia node docs.gaianet.ai/getting-started/quick-start.
+2. **Gaia Nodes** - Decentralized AI inference network with OpenAI-compatible API
 
 To switch between providers, set the `AI_PROVIDER` environment variable:
 
 ```bash
 # Use Ollama (default)
 AI_PROVIDER=ollama
+OLLAMA_HOST=http://localhost:11434
 
 # Use Gaia Nodes
 AI_PROVIDER=gaia
@@ -116,6 +121,112 @@ When using Gaia Nodes, you must provide:
 - `GAIA_NODE_URL`: The URL of your Gaia Node
 - `GAIA_MODEL_NAME`: The model name to use (e.g., gpt-4, gpt-3.5-turbo)
 - `GAIA_API_KEY`: Your API key for authentication
+
+Learn how to launch your own Gaia node at [docs.gaianet.ai/getting-started/quick-start](https://docs.gaianet.ai/getting-started/quick-start).
+
+**Note:** Dependencies are split into optional groups (`ollama` and `gaia`) to reduce Docker image size. The Dockerfile installs `ollama` by default. To use Gaia, update the Dockerfile line:
+```dockerfile
+RUN uv sync --frozen --no-dev --group gaia
+```
+
+## ERC-8004 Agent Registration
+
+This service supports on-chain agent registration using the [ERC-8004 Agent Identity Standard](https://eips.ethereum.org/EIPS/eip-8004) via the [Agent0 SDK](https://github.com/agent0lab/agent0-py). For Oasis ROFL-specific validation tooling, see [ERC-8004 on Oasis](https://github.com/oasisprotocol/erc-8004).
+
+When the service starts running in an Oasis ROFL TEE, it automatically:
+- Registers the agent on-chain with metadata (name, description, capabilities)
+- Publishes the agent card to IPFS
+- Configures trust models (reputation + TEE attestation)
+- Enables x402 payment support
+- Registers the service endpoint for discovery
+
+### Configuration
+
+To enable agent registration, set these environment variables:
+
+```bash
+# Agent0 SDK Configuration
+AGENT0_CHAIN_ID=84532  # Base Sepolia testnet
+AGENT0_RPC_URL=https://base-sepolia.g.alchemy.com/v2/your-api-key
+AGENT0_PRIVATE_KEY=your-private-key-here
+AGENT0_IPFS_PROVIDER=pinata
+AGENT0_PINATA_JWT=your-pinata-jwt-token
+
+# Agent Configuration
+AGENT_NAME=Oasis ROFL x402 Summarization Agent
+AGENT_DESCRIPTION=x402-enabled document processing agent running in Oasis TEE
+AGENT_IMAGE=https://your-domain.com/logo.png  # Served from /logo.png endpoint
+AGENT_WALLET_ADDRESS=0x...  # Optional: agent's payment wallet
+
+# x402 Endpoint
+X402_ENDPOINT_URL=https://your-domain.com/summarize-doc
+```
+
+The agent ID is persisted in Oasis ROFL metadata (production) or a local `.agent_id` file (development). On subsequent restarts, the service will load and update the existing agent rather than creating a new one.
+
+### Agent Card Example
+
+Once registered, your agent will have an on-chain identity with metadata like:
+
+```json
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Oasis ROFL x402 Summarization Agent",
+  "description": "x402-enabled document processing agent running in Oasis TEE. REST API for async summarization. Multi-provider AI backend (Ollama/Gaia). On-chain registered with reputation trust model.",
+  "image": "http://localhost:4021/logo.png",
+  "endpoints": [
+    {
+      "name": "A2A",
+      "endpoint": "https://summary.updev.si/summarize-doc",
+      "version": "1.0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:84532:0xebD8A84C29E1f534c0E8fA555E1Ee63Ff4E0592C"
+    }
+  ],
+  "registrations": [
+    {
+      "agentId": 380,
+      "agentRegistry": "eip155:1:{identityRegistry}"
+    }
+  ],
+  "supportedTrust": ["reputation", "tee-attestation"],
+  "active": true,
+  "x402support": true,
+  "updatedAt": 1762363389
+}
+```
+
+## TEE-Attested Response Signing
+
+All API responses are cryptographically signed using SECP256K1 keys generated inside the Oasis ROFL TEE, providing cryptographic proof that responses originated from the attested service.
+
+**How it works:**
+1. On startup, the service generates a SECP256K1 key pair using Oasis ROFL's keymanager
+2. The public key is registered in Oasis ROFL metadata and ERC-8004 agent metadata as `rofl_signing_public_key`
+3. Each response is signed with a recoverable ECDSA signature over canonical JSON
+4. Clients can verify signatures by recovering the public key and comparing to the registered key
+
+**Signed response format:**
+```json
+{
+  "status": "completed",
+  "summary": "...",
+  "timestamp": 1730000000,
+  "signature": "df9528e21e543b31a6b909d66002f974...",
+  "public_key": "03e1e2206b206770bb69feb6f37ec091..."
+}
+```
+
+**Configuration:**
+```bash
+ENVIRONMENT=production      # Uses Oasis ROFL keymanager for signing
+ENVIRONMENT=development     # Signing disabled
+DEBUG_SIGNING=true         # Use mock keys for testing
+```
+
+In production, the signing key is generated by Oasis ROFL's secure keymanager and never leaves the TEE. The public key can be verified against the on-chain attested state in the [Oasis ROFL registry](https://github.com/ptrus/rofl-registry).
 
 ## Try the Live Testnet Deployment
 
