@@ -10,3 +10,6 @@ wheels/
 .venv
 
 .env
+
+# Agent ID storage
+.agent_id

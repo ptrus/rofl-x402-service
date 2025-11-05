@@ -7,7 +7,7 @@ services:
 
   app:
     build: ./app
-    image: "docker.io/ptrusr/rofl-x402-docs:latest@sha256:503a20e60705222537f5b984cbc1b9e9a956832c9835dbb7511d3e6833d87e8b"
+    image: "docker.io/ptrusr/rofl-x402-docs:latest"
     platform: linux/amd64
     ports:
       - "4021:4021"
@@ -17,7 +17,19 @@ services:
       - ADDRESS=${ADDRESS:-0x492F9757240365621fA03fbcee80f3eA72b98d15}
       - X402_NETWORK=${X402_NETWORK:-base-sepolia}
       - X402_PRICE=${X402_PRICE:-$0.001}
+      - X402_ENDPOINT_URL=${X402_ENDPOINT_URL:-http://localhost:4021/summarize-doc}
       - OLLAMA_HOST=http://llm:11434
+      - AI_PROVIDER=${AI_PROVIDER:-ollama}
+      - AGENT0_CHAIN_ID=${AGENT0_CHAIN_ID:-84532}
+      - AGENT0_RPC_URL=${AGENT0_RPC_URL}
+      - AGENT0_PRIVATE_KEY=${AGENT0_PRIVATE_KEY}
+      - AGENT0_IPFS_PROVIDER=${AGENT0_IPFS_PROVIDER:-pinata}
+      - AGENT0_PINATA_JWT=${AGENT0_PINATA_JWT}
+      - AGENT_NAME=${AGENT_NAME:-ROFL x402 Summarization Agent}
+      - AGENT_DESCRIPTION=${AGENT_DESCRIPTION:-x402-enabled document processing agent running in TEE}
+      - AGENT_IMAGE=${AGENT_IMAGE:-http://localhost:4021/logo.png}
+      - AGENT_WALLET_ADDRESS=${AGENT_WALLET_ADDRESS}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
     depends_on:
       - llm
 

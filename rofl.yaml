@@ -19,11 +19,11 @@ artifacts:
     runtime: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.8.2/rofl-containers#e9589c9cb68aee146a61ceefcce749ef5a391258dd26dc3037027733d883839f
     compose: compose.yaml
 deployments:
-  default:
+  testnet:
     app_id: rofl1qq6m08wlj3qawcfrd3ljyge2t0praed5ycwh7upg
     network: testnet
     paratime: sapphire
-    admin: roflios_hackaton
+    admin: ptrus_testnet
     oci_repository: rofl.sh/d7d55e8f-f2a2-4917-8867-42d23727d54c:1761813307
     trust_root:
       height: 29104063
