@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "agent0-sdk",
+    "agent0-sdk @ git+https://github.com/ptrus/agent0-py.git@ptrus/fix/indexer-deps-group",
     "fastapi>=0.120.2",
     "x402>=0.2.1",
     "python-dotenv>=1.0.0",
