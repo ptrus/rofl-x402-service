@@ -57,10 +57,6 @@ async def store_agent_id_in_rofl_metadata(agent_id: str):
 
         rofl_client = RoflClient()
         await rofl_client.set_metadata({"agent_id": agent_id})
-    except json.JSONDecodeError:
-        # set_metadata returns 200 OK with empty body, which causes JSON decode error
-        # This is expected - treat as success
-        pass
     except Exception as e:
         print(f"⚠️  Could not store agent ID in ROFL metadata: {e}")
 

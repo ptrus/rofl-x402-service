@@ -16,7 +16,7 @@ artifacts:
   kernel: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.6.2/stage1.bin#e5d4d654ca1fa2c388bf64b23fc6e67815893fc7cb8b7cfee253d87963f54973
   stage2: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.6.2/stage2-podman.tar.bz2#b2ea2a0ca769b6b2d64e3f0c577ee9c08f0bb81a6e33ed5b15b2a7e50ef9a09f
   container:
-    runtime: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.8.2/rofl-containers#e9589c9cb68aee146a61ceefcce749ef5a391258dd26dc3037027733d883839f
+    runtime: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.8.3/rofl-containers#6ec7e42cd47ded19793a94e70d5b13121a3583104ebf46976bc730ac6ec06750
     compose: compose.yaml
 deployments:
   testnet:
@@ -35,12 +35,39 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - id: 9DoK9hE+SJkFr8ZSOyCJoil3bJcUP9qjlr9jFQC0DAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - id: pVne44TQWBLsCj2/i7So+Jdj5GkxoZIbIC1LZgO8pP4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: BCber+xgkN96NZFBSTjXgjaHX/KkY7yXOHzr7b4AXuoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: i6Mwa4VQ0NEb1dy6jAhMaOgZZYP0URd+EmG6COUyFQMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
       max_expiration: 3
+    secrets:
+      - name: ADDRESS
+        value: pGJwa1ggKuPGdJ1WAft127GCrwhEv7ZWxnE14urufljoigm9QzBkbmFtZVegBT890UScnbP5UKus3x9t/a7WO0n3smVub25jZU+fAR7nDHQYhZa7zP3a7NhldmFsdWVYOnHvxwe7BCjtZs+0zjc79WHmGA97N3q9SJUNg23SuF+Q5xn8/IckhYdZ4rSq6fNy+TBXwIDvMerNARg=
+      - name: AGENT0_CHAIN_ID
+        value: pGJwa1ggJHkK9/zY1RGYZ0tqZ35CSnhneYsSQYSDSZ6TQwV7djBkbmFtZVgfkBt8yX6BvGahWyRGmIX0lzrc6CuhL3LOjEjLTZaRjmVub25jZU9LKRHT+1hults7CLP76WNldmFsdWVYGFPLjpVb8dlIXSuT2u+3TWK2BIOIS+CqqA==
+      - name: AGENT0_IPFS_PROVIDER
+        value: pGJwa1ggALVnOCy6kQuFQAPaFp8we0h02vrtbnbseUB2MdDJvQ9kbmFtZVgk8cVvMeg4hZmBV+95vWCLh2kr8e7ICllVGv0KN7SCaSReVWvcZW5vbmNlT6H8UrZkt2Hmj9BJyJtsAmV2YWx1ZVZK8c2P67FSqtca7zyPEA1S7ebaKvSk
+      - name: AGENT0_PINATA_JWT
+        value: pGJwa1ggcrpqaux2S03LbLgKK8gEtpkQ0g2UrlED2+HxHDz8/3xkbmFtZVghKlaW3NxBTFvgudgOdSlnu+PTPp7Dh6E+TS5O0Ce+JR3wZW5vbmNlT4EeauxomjYYocQrGeI1Z2V2YWx1ZVkCt5QHsCvGw6qD+06eDRM57txxK8vixh0LfdePmhVRNqdPJj/eXMKhqQYYoFGNgItdM3Ka36X0wqGmoUX+eZU2NoTyIbEnCEim394XxBC01Dpr5DhAS4Hq/HhXSm/WFhS2xRehx3pLTTlUhv4csWMRWri6jCIQaxNpY5kC6FjYu1qSvnGVCKzJIOIMTekkfbSxzvxokdlDK+QoZ/v9J4fmrEqHagqr5UzMIv4v3jqio8Jt1dLF5NA9HF8EPrynXaf7B9jgpg73W53bKzGLCeTw7C+mtmhgx5LwukTjtfns//vfzrXugN8hd7koBnE04acm7nRuCOTsoG7tm0TKSh9lx2QoIOhHPwJQ0pcnjYAHhBzoQGzctGqssTnU+lshwkAq4RvbOY2XdVhh3emmL5lpMY0T6sOkspYjLrbw4q2ZcvPczpP2dzidSJ+Oz1bSSiwutU+qO9Ha2y1tHL563m6H5DBHxYgWSnxjCAftz3HabRmt9bU5aMlCNM9DEG45WZtBU4vKrTc89b6vxPzL34pUmMYUc7K+4pnLMEJ1r6mP0rFTEPSeMleoSmRk9vaKiK42rizv4ydmTdsPn1D5j0hFgHd9CGB3/LRyX8rKDGtvRQvGEWP9WT21u+wdimfsMt3rmmia/RIgoEq0i2wWAOgp42qohWlXEOuH0yxTWcNw9pgD+IopOOS5RYfq5OXdnIYtyaKuGycE2bElDZoqkO4smb3Z4o2crv7qt3oAVtEVL+gKX1gU8y/dkOP7DpzhqHIfo+jncmUYfmH7uaV1b29MruAcDjg2wSLG+UFcswlUhIJTZ0OSU24Qu6hQlSap5T1EgW9paHe2y0Xq0GlsdW2+n8mpEj5e7PkybfJP8qRmD3nv9WSEVkzNwhCvnF2AUjziJ8UDxA3McbwJgo7mDLul01BZEcyWMZgm
+      - name: AGENT0_PRIVATE_KEY
+        value: pGJwa1ggDaCKRH2B1t1kb9GpMn3B0vupw9dGDZm3ifDYTYyEfidkbmFtZVgietCQvRY8rDid2Ijn6fVDS/BvO6vzjgI1FpBJlLAMphK96mVub25jZU/oHiPpXDGl7balkIFqFB1ldmFsdWVYUDOckLdPOV4qXpCd4s+qpocFl3pKYPSplcqqEm34SEV83aH9Ldua99YmRb4svNM9B2veWucMURTgax+9+Z7CGG8mOMSNT4wXjAILYctItxmB
+      - name: AGENT0_RPC_URL
+        value: pGJwa1ggt5bTXT8HXevldWLw/yA3o8K3fEz1bk+m6YEOsVFYBRJkbmFtZVgeUXD+eU21tnteDseJu5HRPY2MCJymP3CI/rDSOBWlZW5vbmNlT1rPg2jBXasKKiF7lJ93nmV2YWx1ZVhKdKK2B4rGr1ysT+70xKaMwgnj7/8f40XB6/lK7Z+8w0TrIg0O+hCXB9tEU3lH1fHumGLvtOHdAANDkRt7P2BGrWbvA2EMsbLs0as=
+      - name: AGENT_DESCRIPTION
+        value: pGJwa1ggdOXaBIHgoaolEWlcAudkHSzCa1QRTY9c9BXu7L0QwltkbmFtZVgh7GaFnTMn7flGhZd2k2Poj8rp7LJwRmivf7QqpcDnxaUaZW5vbmNlTz5LhUdtdFK5s43Vut8WcGV2YWx1ZVjNfFuqZgr/vdNq0R/jBo+hBv8acAEys+AjbjbJEtaLIPTy59PIJtMVhPx/1hMeK09ufgAQuwYxZhVJAKHL4vG4nZ/kBKraL6b6aKCcz0H6217gHqFNE4mU2IQCNBbKq0bA4hWHjJ/UFYm5x0RPnVORD1i8KdnQjCf/NSHZU40XtyI0zunSMlgF4s2z0NoGpa5OnYHV2d1Ng3eFCYqcabBHoImOeKAKbgbGxWn+O+vvMsjyl85AMFkBWrhFfVcKrN71sGket9t2fiXVfl2gTA==
+      - name: AGENT_IMAGE
+        value: pGJwa1gghdtbKBYqSnxaCciV+bhW69ANivBRrXjqutzJs8TaN2lkbmFtZVgbi6j0Tw+xhi/f8JFtDR/SNANd1RSaXbC2GJQzZW5vbmNlTxtVTkPom2umnaXrcYp2mmV2YWx1ZVgxDMbepckgrBrEhndT1XqPBNmSdWiBPD4U1QA+Vec7kgnV7E0TYJvWoBI5gy0vVLIZtQ==
+      - name: AGENT_NAME
+        value: pGJwa1ggybYqewgg3VpYMmwYUdaTGPxz1uu7rTws9DurgJ/BqStkbmFtZVgaCu2ffdjbLq7UKUo34g96mB6b1eme3/RAWCxlbm9uY2VPw8py8OVGkPEQeEkMNHpaZXZhbHVlWDMeTGSbes91DBCZdn4I6u68m+gDbqbLsF0EzEt8lGCMIpPcD7unsnWXHOBm5TEt/bcD3Js=
+      - name: AGENT_WALLET_ADDRESS
+        value: pGJwa1gg7QEu6HHsBDkAPd8PX7mL4ZbmPTbJWmPmZhBkTDNyoiNkbmFtZVgk4p/kXzoEDrWkMDWqV8HUY5b2UUhPvE0dSJnGOeZZlkLYs4YfZW5vbmNlT/9cAiqdYagbdv4VDFdFcmV2YWx1ZVg6Ym4sHrIMqKNX84Z1iOfKU0aQwcqaj9bRNDhq3q8m6IBy045+Vwi32fH+laJ6bXi+VhjuMfwZ64V/HQ==
+      - name: ENVIRONMENT
+        value: pGJwa1ggqYBkK6I2tk494fxX6Ecw7XfBhXf2ckxll0upyUNDtFZkbmFtZVgbNxR8DlbMKWnXyK0VzLoLPY9XxIgefgD46jiwZW5vbmNlTzfSk5jvi0ZMsunLCI3VQWV2YWx1ZVgaMVEGDwehh7QPwQDVeXa1N3KaH9baeMwUUjU=
+      - name: X402_NETWORK
+        value: pGJwa1ggt7AEj+t8eNUECGV0+1l3BTG7NW5vJkInvDalGJK3PAxkbmFtZVgcgXBKKiR95ktt4lee7INWcaorwhibKFcLuhJLWmVub25jZU9scb8iqBRWDwz2oiaeyatldmFsdWVYHKBTVWcHGOHJz6t3HQq2nESD+37sNlqAVnmuP/o=
+      - name: X402_PRICE
+        value: pGJwa1ggLeXbks/cUNEwWCvVvPq1+Vga5Rrb5BpPM3OVfy9jUW1kbmFtZVgail9tiZnuVSkh0G2FqMMGkw7f8SrvIYhLlM1lbm9uY2VP9m4dwqklRgcSzZcJAAXaZXZhbHVlVv0zgXLDGxgSpEq3x+1IrB1dIq2Fg4M=
     machines:
       default:
         provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
