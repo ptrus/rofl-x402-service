@@ -14,7 +14,7 @@ services:
     volumes:
       - /run/rofl-appd.sock:/run/rofl-appd.sock
     annotations:
-      net.oasis.proxy.ports.4021.custom_domain: summary.updev.si
+      net.oasis.proxy.ports.4021.custom_domain: summarize.updev.si
     environment:
       - ADDRESS=${ADDRESS:-0x492F9757240365621fA03fbcee80f3eA72b98d15}
       - X402_NETWORK=${X402_NETWORK:-base-sepolia}
