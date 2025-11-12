@@ -1,6 +1,6 @@
 name: x402-doc-summary
 version: 0.1.0
-repository: https://github.com/ptrus/rofl-x402-service
+repository: https://github.com/oasisprotocol/rofl-x402-service
 author: Peter Us <peter@u-s.si>
 description: A verifiable, private AI document summarization service that uses blockchain micropayments (x402 protocol) and runs inside a ROFL trusted execution environment on the Oasis Network.
 tee: tdx
@@ -35,8 +35,8 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - id: UkNpPB9YqgstFLclrOXBYB7DQnOTor0AC1GnIEc5z+oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - id: Cd5X0Cv6l0e2ZZyNp3t+5mUElrX6OZbwH2sgdycLlvQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: 2A9/kJWybOXamkkkJvZMzYWetFu412jfzAuKLUdEaPoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: GBWYK3nWNK8JfmEt9tyEilD8wns6z40GM/DywSo0IKwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
